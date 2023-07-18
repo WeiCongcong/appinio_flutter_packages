@@ -79,6 +79,14 @@ class AppinioSocialShare {
         attributionURL: attributionURL);
   }
 
+  Future<String> shareToFacebookReels(String appId,
+      {
+        String? backgroundVideo,
+      }) {
+    return AppinioSocialSharePlatform.instance.shareToFacebookReels(appId,
+        backgroundVideo: backgroundVideo);
+  }
+
   ///works only for android
   Future<String> shareToTiktokStatus(String filePath) {
     return AppinioSocialSharePlatform.instance.shareToTiktokStatus(filePath);

@@ -30,7 +30,7 @@ public class ShareUtil{
 
     
     public func getInstalledApps(result: @escaping FlutterResult){
-        let apps = [["instagram","instagram"],["facebook-stories","facebook_stories"],["whatsapp","whatsapp"],["tg","telegram"],["fb-messenger","messenger"],["tiktok","tiktok"],["instagram-stories","instagram_stories"],["twitter","twitter"],["sms","message"]]
+        let apps = [["instagram","instagram"],["facebook-stories","facebook_stories"],["whatsapp","whatsapp"],["tg","telegram"],["fb-messenger","messenger"],["tiktoksharesdk","tiktok"],["instagram-stories","instagram_stories"],["twitter","twitter"],["sms","message"]]
         var output:[String: Bool] = [:]
         for app in apps {
             if(UIApplication.shared.canOpenURL(URL(string:(app[0])+"://")!)){
@@ -479,6 +479,40 @@ public class ShareUtil{
                 }
                 result(self.SUCCESS)
                 return
+        } else {
+            result(ERROR_APP_NOT_AVAILABLE)
+        }
+    }
+
+
+    public func shareToFacebookReels(args : [String: Any?],result: @escaping FlutterResult) {
+        let appId = args[self.argAppId] as? String
+        let argVideoFile = args[self.argVideoFile] as? String
+
+
+        guard let facebookURL = URL(string: "facebook-stories://share") else {
+            result(ERROR_APP_NOT_AVAILABLE)
+            return
+        }
+
+
+        if (UIApplication.shared.canOpenURL(facebookURL)) {
+            var backgroundVideoData:Any?;
+            if(!(argVideoFile==nil)){
+                let backgroundVideoUrl = URL(fileURLWithPath: argVideoFile!)
+                backgroundVideoData = try? Data(contentsOf: backgroundVideoUrl)
+            }
+
+            // Add background video to pasteboard items
+            NSArray *pasteboardItems = @[@{@"com.facebook.sharedSticker.backgroundVideo" : backgroundVideoData ?? "",
+                                           @"com.facebook.sharedSticker.appID" : appId}];
+            let pasteboardOptions = [
+                UIPasteboard.OptionsKey.expirationDate: Date().addingTimeInterval(60 * 5)
+            ]
+            UIPasteboard.general.setItems(pasteboardItems, options: pasteboardOptions)
+            UIApplication.shared.open(facebookURL, options: [:])
+            result(self.SUCCESS)
+            return
         } else {
             result(ERROR_APP_NOT_AVAILABLE)
         }

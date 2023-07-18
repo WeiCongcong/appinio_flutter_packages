@@ -13,6 +13,7 @@ class MethodChannelAppinioSocialShare extends AppinioSocialSharePlatform {
   final String facebook = "facebook";
   final String messenger = "messenger";
   final String facebookStories = "facebook_stories";
+  final String facebookReels = "facebook_reels";
   final String whatsapp = "whatsapp";
   final String twitter = "twitter";
   final String sms = "sms";
@@ -151,6 +152,18 @@ class MethodChannelAppinioSocialShare extends AppinioSocialSharePlatform {
           "attributionURL": attributionURL,
           "appId": appId
         })) ??
+        "");
+  }
+
+  @override
+  Future<String> shareToFacebookReels(String appId,
+      {
+        String? backgroundVideo,
+      }) async {
+    return ((await methodChannel.invokeMethod<String>(facebookReels, {
+      "videoFile": backgroundVideo,
+      "appId": appId
+    })) ??
         "");
   }
 
