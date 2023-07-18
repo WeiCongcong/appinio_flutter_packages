@@ -490,7 +490,7 @@ public class ShareUtil{
         let argVideoFile = args[self.argVideoFile] as? String
 
 
-        guard let facebookURL = URL(string: "facebook-stories://share") else {
+        guard let facebookURL = URL(string: "facebook-reels://share") else {
             result(ERROR_APP_NOT_AVAILABLE)
             return
         }
@@ -504,8 +504,12 @@ public class ShareUtil{
             }
 
             // Add background video to pasteboard items
-            NSArray *pasteboardItems = @[@{@"com.facebook.sharedSticker.backgroundVideo" : backgroundVideoData ?? "",
-                                           @"com.facebook.sharedSticker.appID" : appId}]
+            let pasteboardItems = [
+                [
+                    "com.facebook.sharedSticker.backgroundVideo" : backgroundVideoData ?? "",
+                    "com.facebook.sharedSticker.appID" : appId,
+                ]
+            ]
             let pasteboardOptions = [
                 UIPasteboard.OptionsKey.expirationDate: Date().addingTimeInterval(60 * 5)
             ]
