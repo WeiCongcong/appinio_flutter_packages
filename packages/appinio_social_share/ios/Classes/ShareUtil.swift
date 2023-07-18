@@ -505,7 +505,7 @@ public class ShareUtil{
 
             // Add background video to pasteboard items
             NSArray *pasteboardItems = @[@{@"com.facebook.sharedSticker.backgroundVideo" : backgroundVideoData ?? "",
-                                           @"com.facebook.sharedSticker.appID" : appId}];
+                                           @"com.facebook.sharedSticker.appID" : appId}]
             let pasteboardOptions = [
                 UIPasteboard.OptionsKey.expirationDate: Date().addingTimeInterval(60 * 5)
             ]

@@ -35,7 +35,7 @@ class MethodChannelAppinioSocialShare extends AppinioSocialSharePlatform {
 
   @override
   Future<String> shareToTiktokStatus(String filePath) async {
-    if (Platform.isIOS) return "Not implemented for iOS";
+    // if (Platform.isIOS) return "Not implemented for iOS";
     return ((await methodChannel.invokeMethod<String>(
             tiktokStatus, {"imagePath": filePath, "message": ""})) ??
         "");
@@ -43,7 +43,7 @@ class MethodChannelAppinioSocialShare extends AppinioSocialSharePlatform {
 
   @override
   Future<String> shareToTiktokPost(String videoFile) async {
-    if (Platform.isAndroid) return "Not implemented for android";
+    // if (Platform.isAndroid) return "Not implemented for android";
     return ((await methodChannel
             .invokeMethod<String>(tiktokPost, {"videoFile": videoFile})) ??
         "");
