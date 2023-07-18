@@ -74,33 +74,127 @@ public class ShareUtil{
     }
 
 
+    public func shareToTiktokStatus(args : [String: Any?],result: @escaping FlutterResult){
+        let imageFile = args[argImagePath] as? String
+        let backgroundVideoUrl = URL(fileURLWithPath: imageFile!)
+        let videoData = try? Data(contentsOf: backgroundVideoUrl) as NSData
 
-    public func shareToTiktok(args : [String: Any?],result: @escaping FlutterResult){
-        let images = args[argImages] as? [String]
-        let videoFile = args[argVideoFile] as? String
+        getLibraryPermissionIfNecessary { granted in
 
-
-        let request = TikTokOpenSDKShareRequest()
-
-        request.mediaType = images == nil ? TikTokOpenSDKShareMediaType.video : TikTokOpenSDKShareMediaType.image
-        var mediaLocalIdentifiers: [String] = []
-
-
-        if(videoFile==nil){
-            mediaLocalIdentifiers.append(contentsOf: images!)
-        }else{
-            mediaLocalIdentifiers.append(videoFile!)
+            guard granted else {
+                result(self.ERROR)
+                return
+            }
         }
 
-              request.localIdentifiers = mediaLocalIdentifiers
-              DispatchQueue.main.async {
-                let a = request.send(completionBlock: { response in
-                  print("Response from TikTok")
-                  print(response.errCode.rawValue)
-                  print(response.shareState.rawValue)
-                })
-              }
-        result(SUCCESS)
+        PHPhotoLibrary.shared().performChanges({
+
+            let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0];
+            let filePath = "\(documentsPath)/\(Date().description).jpeg"
+
+            videoData!.write(toFile: filePath, atomically: true)
+            PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: URL(fileURLWithPath: filePath))
+        },
+        completionHandler: { success, error in
+
+            if success {
+
+                let fetchOptions = PHFetchOptions()
+
+                fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+
+                let fetchResult = PHAsset.fetchAssets(with: .image, options: fetchOptions)
+
+                if let lastAsset = fetchResult.firstObject {
+
+                    let localIdentifier = lastAsset.localIdentifier
+                    let request = TikTokOpenSDKShareRequest()
+                    request.mediaType = TikTokOpenSDKShareMediaType.image
+                    var mediaLocalIdentifiers: [String] = []
+                    mediaLocalIdentifiers.append(localIdentifier)
+                    request.localIdentifiers = mediaLocalIdentifiers
+                    DispatchQueue.main.async {
+                        let a = request.send(completionBlock: { response in
+                            print("Response from TikTok")
+                            print(response.errCode.rawValue)
+                            print(response.shareState.rawValue)
+                            result(self.SUCCESS)
+                        })
+                    }
+                }
+            }
+            else if let error = error {
+
+                print(error.localizedDescription)
+                result(self.ERROR)
+            }
+            else {
+
+                result(self.ERROR)
+            }
+        })
+    }
+
+
+    public func shareToTiktokPost(args : [String: Any?],result: @escaping FlutterResult){
+        let videoFile = args[argVideoFile] as? String
+        let backgroundVideoUrl = URL(fileURLWithPath: videoFile!)
+        let videoData = try? Data(contentsOf: backgroundVideoUrl) as NSData
+
+        getLibraryPermissionIfNecessary { granted in
+
+            guard granted else {
+                result(self.ERROR)
+                return
+            }
+        }
+
+        PHPhotoLibrary.shared().performChanges({
+
+            let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0];
+            let filePath = "\(documentsPath)/\(Date().description).mp4"
+
+            videoData!.write(toFile: filePath, atomically: true)
+            PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: URL(fileURLWithPath: filePath))
+        },
+        completionHandler: { success, error in
+
+            if success {
+
+                let fetchOptions = PHFetchOptions()
+
+                fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+
+                let fetchResult = PHAsset.fetchAssets(with: .video, options: fetchOptions)
+
+                if let lastAsset = fetchResult.firstObject {
+
+                    let localIdentifier = lastAsset.localIdentifier
+                    let request = TikTokOpenSDKShareRequest()
+                    request.mediaType = TikTokOpenSDKShareMediaType.video
+                    var mediaLocalIdentifiers: [String] = []
+                    mediaLocalIdentifiers.append(localIdentifier)
+                    request.localIdentifiers = mediaLocalIdentifiers
+                    DispatchQueue.main.async {
+                        let a = request.send(completionBlock: { response in
+                            print("Response from TikTok")
+                            print(response.errCode.rawValue)
+                            print(response.shareState.rawValue)
+                            result(self.SUCCESS)
+                        })
+                    }
+                }
+            }
+            else if let error = error {
+
+                print(error.localizedDescription)
+                result(self.ERROR)
+            }
+            else {
+
+                result(self.ERROR)
+            }
+        })
     }
 
 
