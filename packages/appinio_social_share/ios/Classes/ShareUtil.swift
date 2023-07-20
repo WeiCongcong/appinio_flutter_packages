@@ -579,41 +579,72 @@ public class ShareUtil{
     }
 
 
-    public func shareToFacebookReels(args : [String: Any?],result: @escaping FlutterResult) {
-        let appId = args[self.argAppId] as? String
-        let argVideoFile = args[self.argVideoFile] as? String
+    public func shareToFacebookReels(args : [String: Any?],result: @escaping FlutterResult,delegate: SharingDelegate) {
+        let message = args[argMessage] as? String
+        let videoFile = args[argVideoFile] as? String
+        let backgroundVideoUrl = URL(fileURLWithPath: videoFile!)
+        let videoData = try? Data(contentsOf: backgroundVideoUrl) as NSData
 
+        getLibraryPermissionIfNecessary { granted in
 
-        guard let facebookURL = URL(string: "facebook-reels://share") else {
-            result(ERROR_APP_NOT_AVAILABLE)
-            return
-        }
-
-
-        if (UIApplication.shared.canOpenURL(facebookURL)) {
-            var backgroundVideoData:Any?;
-            if(!(argVideoFile==nil)){
-                let backgroundVideoUrl = URL(fileURLWithPath: argVideoFile!)
-                backgroundVideoData = try? Data(contentsOf: backgroundVideoUrl)
+            guard granted else {
+                result(self.ERROR)
+                return
             }
-
-            // Add background video to pasteboard items
-            let pasteboardItems = [
-                [
-                    "com.facebook.sharedSticker.backgroundVideo" : backgroundVideoData ?? "",
-                    "com.facebook.sharedSticker.appID" : appId,
-                ]
-            ]
-            let pasteboardOptions = [
-                UIPasteboard.OptionsKey.expirationDate: Date().addingTimeInterval(60 * 5)
-            ]
-            UIPasteboard.general.setItems(pasteboardItems, options: pasteboardOptions)
-            UIApplication.shared.open(facebookURL, options: [:])
-            result(self.SUCCESS)
-            return
-        } else {
-            result(ERROR_APP_NOT_AVAILABLE)
         }
+
+        PHPhotoLibrary.shared().performChanges({
+
+            let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0];
+            let filePath = "\(documentsPath)/\(Date().description).mp4"
+
+            videoData!.write(toFile: filePath, atomically: true)
+            PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: URL(fileURLWithPath: filePath))
+        },
+        completionHandler: { success, error in
+
+            if success {
+
+                let fetchOptions = PHFetchOptions()
+
+                fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+
+                let fetchResult = PHAsset.fetchAssets(with: .video, options: fetchOptions)
+
+                if let lastAsset = fetchResult.firstObject {
+                    let video = ShareVideo.init(videoAsset: lastAsset)
+                    let content = ShareVideoContent()
+                    content.video = video
+                    if (message != nil) {
+                        content.hashtag = Hashtag(message)
+                    }
+                    DispatchQueue.main.async {
+                        let dialog = ShareDialog(
+                            viewController: UIApplication.shared.windows.first!.rootViewController,
+                            content: content,
+                            delegate: delegate
+                        )
+                        do {
+                            try dialog.validate()
+                        } catch {
+                            result(self.ERROR)
+                        }
+                        dialog.show()
+                        result(self.SUCCESS)
+                    }
+                }
+            }
+            else if let error = error {
+
+                print(error.localizedDescription)
+                result(self.ERROR)
+            }
+            else {
+
+                result(self.ERROR)
+            }
+        })
+
     }
     
     

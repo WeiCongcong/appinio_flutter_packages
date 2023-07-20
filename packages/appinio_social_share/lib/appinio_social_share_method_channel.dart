@@ -156,13 +156,14 @@ class MethodChannelAppinioSocialShare extends AppinioSocialSharePlatform {
   }
 
   @override
-  Future<String> shareToFacebookReels(String appId,
+  Future<String> shareToFacebookReels(
       {
+        String? hashtag,
         String? backgroundVideo,
       }) async {
     return ((await methodChannel.invokeMethod<String>(facebookReels, {
+      "message": hashtag,
       "videoFile": backgroundVideo,
-      "appId": appId
     })) ??
         "");
   }

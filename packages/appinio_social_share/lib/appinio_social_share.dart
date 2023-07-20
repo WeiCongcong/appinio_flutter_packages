@@ -79,12 +79,14 @@ class AppinioSocialShare {
         attributionURL: attributionURL);
   }
 
-  Future<String> shareToFacebookReels(String appId,
+  Future<String> shareToFacebookReels(
       {
+        String? hashtag,
         String? backgroundVideo,
       }) {
-    return AppinioSocialSharePlatform.instance.shareToFacebookReels(appId,
-        backgroundVideo: backgroundVideo);
+    return AppinioSocialSharePlatform.instance.shareToFacebookReels(
+      hashtag: hashtag, backgroundVideo: backgroundVideo,
+    );
   }
 
   ///works only for android

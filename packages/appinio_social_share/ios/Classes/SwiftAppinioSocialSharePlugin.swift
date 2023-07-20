@@ -65,7 +65,7 @@ public class SwiftAppinioSocialSharePlugin: NSObject, FlutterPlugin, SharingDele
           shareUtil.shareToFacebookStory(args:args!,result:result)
           break
       case FACEBOOK_REELS:
-          shareUtil.shareToFacebookReels(args:args!,result:result)
+          shareUtil.shareToFacebookReels(args:args!,result:result,delegate: self)
           break
       case WHATSAPP:
           shareUtil.shareToWhatsApp(args:args!, result:result)
