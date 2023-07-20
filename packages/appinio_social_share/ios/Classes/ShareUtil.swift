@@ -616,7 +616,7 @@ public class ShareUtil{
                     let content = ShareVideoContent()
                     content.video = video
                     if (message != nil) {
-                        content.hashtag = Hashtag(message)
+                        content.hashtag = Hashtag(message!)
                     }
                     DispatchQueue.main.async {
                         let dialog = ShareDialog(
